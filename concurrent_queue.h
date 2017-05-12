@@ -12,7 +12,7 @@ class concurrent_queue
 
     public:
 
-    void Close()
+    void close()
     {
         {
             std::lock_guard<std::mutex> lock(the_mutex);
@@ -57,7 +57,7 @@ class concurrent_queue
 
         the_condition_variable.wait(lock, [this]{ return (the_queue.empty() || !isFinished); });
 
-        if(the_queue.empty())
+        if(the_queue.empty() || !isFinished)
         {
             return false;
         }
