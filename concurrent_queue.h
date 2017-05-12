@@ -60,7 +60,7 @@ class concurrent_queue
 
         the_condition_variable.wait(lock, [this]{ return (the_queue.empty() || !isFinished); });
 
-        if(the_queue.empty() || !isFinished)
+        if(the_queue.empty() && !isFinished)
         {
             return false;
         }
