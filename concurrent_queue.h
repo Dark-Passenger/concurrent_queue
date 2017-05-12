@@ -1,4 +1,7 @@
-#include <queue>
+#ifndef _CONCURRENT_QUEUE_H_
+#define _CONCURRENT_QUEUE_H_
+
+#include <deque>
 #include <mutex>
 #include <condition_variable>
 
@@ -77,3 +80,5 @@ class concurrent_queue
         the_queue.pop_front();
     }
 };
+
+#endif
