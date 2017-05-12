@@ -8,11 +8,20 @@ class concurrent_queue
     std::deque<DataType> the_queue;
     std::mutex the_mutex;
     std::condition_variable the_condition_variable;
+    bool isFinished = false;
 
     public:
 
-    //this is public to allow for an external call to close a loop.
-    bool unlock = false;
+    void Close()
+    {
+        {
+            std::lock_guard<std::mutex> lock(the_mutex);
+            isFinished = true;
+        }
+
+        the_condition_variable.notify_one();
+
+    }
 
     template<class... Args>
         void emplace(Args&&... args)
@@ -20,7 +29,6 @@ class concurrent_queue
             {
                 std::lock_guard<std::mutex> lock(the_mutex);
                 the_queue.emplace_back(std::forward<Args>(args)...);
-                unlock = true;
             }
 
             the_condition_variable.notify_one();
@@ -31,7 +39,6 @@ class concurrent_queue
         {
             std::lock_guard<std::mutex> lock(the_mutex);
             the_queue.push_back(data);
-            unlock = true;
         }
 
         the_condition_variable.notify_one();
@@ -48,7 +55,7 @@ class concurrent_queue
     {
         std::unique_lock<std::mutex> lock(the_mutex);
 
-        the_condition_variable.wait(lock, [this]{ return unlock; });
+        the_condition_variable.wait(lock, [this]{ return (the_queue.empty() || !isFinished); });
 
         if(the_queue.empty())
         {
@@ -64,7 +71,7 @@ class concurrent_queue
     {
         std::unique_lock<std::mutex> lock(the_mutex);
 
-        the_condition_variable.wait(lock, [this]{ return unlock; });
+        the_condition_variable.wait(lock, [this]{ return (the_queue.empty() || !isFinished); });
 
         popped_value=the_queue.front();
         the_queue.pop_front();
