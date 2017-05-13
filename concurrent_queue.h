@@ -9,7 +9,7 @@ template <typename DataType>
 class concurrent_queue
 {
     std::deque<DataType> the_queue;
-    std::mutex the_mutex;
+    mutable std::mutex the_mutex;
     std::condition_variable the_condition_variable;
     bool isFinished = false;
 
